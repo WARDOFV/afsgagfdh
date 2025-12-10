@@ -1,1 +1,212 @@
-f
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+// Просто перечисления без сложных функций
+enum raion {
+    centre,
+    zavodskoi,
+    leninskii,
+    Lesnai_polana,
+    yjnii,
+    kirovskii,
+    rydnichii
+};
+
+enum pol {
+    myj,
+    jen
+};
+
+// Структура для даты
+struct Date {
+    int day;
+    int month;
+    int year;
+};
+
+// Структура для жителя
+struct gorod {
+    string fullname;
+    Date birthDate;
+    raion district;
+    string address;
+    pol gender;
+    string phone;
+};
+
+int main() {
+    setlocale(LC_ALL, "RU");
+    // Массив структур
+    gorod people[100]; // Максимум 100 записей
+    int n = 0; // Счетчик записей
+
+    // Открываем файл для чтения
+    ifstream file("book.txt");
+
+    if (!file.is_open()) {
+        cout << "Ошибка! Не удалось открыть файл data.txt" << endl;
+        return 1;
+    }
+
+    // Чтение данных из файла
+    string line;
+    while (getline(file, line) && n < 100) {
+        // Пропускаем пустые строки
+        if (line.empty()) continue;
+
+        // Разбиваем строку на части (разделитель - запятая)
+        int pos1 = line.find(',');
+        int pos2 = line.find(',', pos1 + 1);
+        int pos3 = line.find(',', pos2 + 1);
+        int pos4 = line.find(',', pos3 + 1);
+        int pos5 = line.find(',', pos4 + 1);
+
+        // Заполняем данные
+        people[n].fullname = line.substr(0, pos1);
+
+        // Читаем дату рождения
+        string dateStr = line.substr(pos1 + 1, pos2 - pos1 - 1);
+        // Формат: ДД.ММ.ГГГГ
+        people[n].birthDate.day = stoi(dateStr.substr(0, 2));
+        people[n].birthDate.month = stoi(dateStr.substr(3, 2));
+        people[n].birthDate.year = stoi(dateStr.substr(6, 4));
+
+        // Читаем район
+        string districtStr = line.substr(pos2 + 1, pos3 - pos2 - 1);
+        if (districtStr == "centre") people[n].district = centre;
+        else if (districtStr == "zavodskoi") people[n].district = zavodskoi;
+        else if (districtStr == "leninskii") people[n].district = leninskii;
+        else if (districtStr == "Lesnai_polana") people[n].district = Lesnai_polana;
+        else if (districtStr == "yjnii") people[n].district = yjnii;
+        else if (districtStr == "kirovskii") people[n].district = kirovskii;
+        else people[n].district = rydnichii;
+
+        // Читаем адрес
+        people[n].address = line.substr(pos3 + 1, pos4 - pos3 - 1);
+
+        // Читаем пол
+        string genderStr = line.substr(pos4 + 1, pos5 - pos4 - 1);
+        if (genderStr == "м" || genderStr == "myj") people[n].gender = myj;
+        else people[n].gender = jen;
+
+        // Читаем телефон
+        people[n].phone = line.substr(pos5 + 1);
+
+        n++; // Увеличиваем счетчик
+    }
+
+    file.close();
+
+    // Проверяем, что записей больше 10
+    if (n < 10) {
+        cout << "Ошибка! В файле меньше 10 записей." << endl;
+        return 1;
+    }
+
+    // Выводим все записи
+    cout << "=== ВСЕ ЗАПИСИ ИЗ ФАЙЛА ===" << endl;
+    for (int i = 0; i < n; i++) {
+        cout << "\nЗапись №" << i + 1 << ":" << endl;
+        cout << "Ф.И.О.: " << people[i].fullname << endl;
+        cout << "Дата рождения: "
+            << people[i].birthDate.day << "."
+            << people[i].birthDate.month << "."
+            << people[i].birthDate.year << endl;
+
+        cout << "Район: ";
+        if (people[i].district == centre) cout << "Центральный";
+        else if (people[i].district == zavodskoi) cout << "Заводской";
+        else if (people[i].district == leninskii) cout << "Ленинский";
+        else if (people[i].district == Lesnai_polana) cout << "Лесная Поляна";
+        else if (people[i].district == yjnii) cout << "Южный";
+        else if (people[i].district == kirovskii) cout << "Кировский";
+        else cout << "Рудничный";
+        cout << endl;
+
+        cout << "Адрес: " << people[i].address << endl;
+
+        cout << "Пол: ";
+        if (people[i].gender == myj) cout << "Мужской";
+        else cout << "Женский";
+        cout << endl;
+
+        cout << "Телефон: " << people[i].phone << endl;
+        cout << "---------------------------" << endl;
+    }
+
+    // Меню пользователя
+    int choice;
+    do {
+        cout << "\n=== МЕНЮ ===" << endl;
+        cout << "1. Вывести все записи" << endl;
+        cout << "2. Вывести по полу" << endl;
+        cout << "3. Вывести по району" << endl;
+        cout << "4. Выход" << endl;
+        cout << "Выберите действие (1-4): ";
+        cin >> choice;
+
+        if (choice == 1) {
+            // Выводим все записи
+            cout << "\n=== ВСЕ ЗАПИСИ ===" << endl;
+            for (int i = 0; i < n; i++) {
+                cout << i + 1 << ". " << people[i].fullname << " - " << people[i].phone << endl;
+            }
+        }
+        else if (choice == 2) {
+            // Вывод по полу
+            int genderChoice;
+            cout << "\nВыберите пол:" << endl;
+            cout << "1. Мужской" << endl;
+            cout << "2. Женский" << endl;
+            cout << "Ваш выбор: ";
+            cin >> genderChoice;
+
+            cout << "\nРезультаты поиска:" << endl;
+            for (int i = 0; i < n; i++) {
+                if ((genderChoice == 1 && people[i].gender == myj) ||
+                    (genderChoice == 2 && people[i].gender == jen)) {
+                    cout << people[i].fullname << " - " << people[i].address << endl;
+                }
+            }
+        }
+        else if (choice == 3) {
+            // Вывод по району
+            int districtChoice;
+            cout << "\nВыберите район:" << endl;
+            cout << "1. Центральный" << endl;
+            cout << "2. Заводской" << endl;
+            cout << "3. Ленинский" << endl;
+            cout << "4. Лесная Поляна" << endl;
+            cout << "5. Южный" << endl;
+            cout << "6. Кировский" << endl;
+            cout << "7. Рудничный" << endl;
+            cout << "Ваш выбор: ";
+            cin >> districtChoice;
+
+            cout << "\nРезультаты поиска:" << endl;
+            for (int i = 0; i < n; i++) {
+                if ((districtChoice == 1 && people[i].district == centre) ||
+                    (districtChoice == 2 && people[i].district == zavodskoi) ||
+                    (districtChoice == 3 && people[i].district == leninskii) ||
+                    (districtChoice == 4 && people[i].district == Lesnai_polana) ||
+                    (districtChoice == 5 && people[i].district == yjnii) ||
+                    (districtChoice == 6 && people[i].district == kirovskii) ||
+                    (districtChoice == 7 && people[i].district == rydnichii)) {
+                    cout << people[i].fullname << " - " << people[i].phone << endl;
+                }
+            }
+        }
+        else if (choice == 4) {
+            cout << "Выход из программы..." << endl;
+        }
+        else {
+            cout << "Неверный выбор! Попробуйте снова." << endl;
+        }
+
+    } while (choice != 4);
+
+    return 0;
+}
